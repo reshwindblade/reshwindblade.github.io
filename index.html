@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Dice Rolling System</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary-color: #1e293b;
+            --secondary-color: #3b82f6;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --light-color: #00458b;
+            --dark-color: #0f172a;
+            --accent-color: #8b5cf6;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            background-color: #0f172a;
+            background-image: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        h1:after {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 4px;
+            background: var(--accent-color);
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-item {
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            border-color: var(--accent-color);
+        }
+        
+        .stat-name {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .stat-description {
+            font-size: 0.8rem;
+            color: #777;
+            margin-bottom: 10px;
+            flex-grow: 1;
+        }
+        
+        .dice-selector {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        select {
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background-color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .roll-section {
+            background-color: #f0f7ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .roll-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .roll-control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            background-color: #f9fafc;
+            transition: all 0.3s ease;
+            -moz-appearance: textfield; /* Firefox */
+        }
+        
+        input[type="number"]:hover,
+        input[type="number"]:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        
+        /* Remove spinner buttons for Chrome, Safari, Edge, Opera */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        /* Custom number input controls */
+        .number-input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .number-input-controls {
+            position: absolute;
+            right: 5px;
+            display: flex;
+            flex-direction: column;
+            height: 70%;
+        }
+        
+        .number-input-btn {
+            background: #e2e8f0;
+            border: none;
+            width: 24px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s ease;
+            border-radius: 4px;
+            margin: 2px;
+        }
+        
+        .number-input-btn:hover {
+            background: #cbd5e1;
+        }
+        
+        .status-section {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .status-item {
+            flex: 1;
+            min-width: 150px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .status-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        }
+        
+        .status-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin: 15px 0 10px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .status-item.stress .status-value {
+            color: var(--danger-color);
+        }
+        
+        .status-item.stamina .status-value {
+            color: var(--success-color);
+        }
+        
+        /* Adding control buttons for stamina */
+        .status-controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        .status-control-btn {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #00458b;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 2px;
+            transition: all 0.2s ease;
+        }
+        
+        .status-control-btn:hover {
+            background-color: #e2e8f0;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--secondary-color);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
+        }
+        
+        button:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(-100%);
+            transition: transform 0.4s ease-out;
+        }
+        
+        button:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        button:hover:after {
+            transform: translateX(0);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+        }
+        
+        button.refresh-btn {
+            background-color: var(--success-color);
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+        }
+        
+        button.refresh-btn:hover {
+            background-color: #059669;
+            box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+            opacity: 0.7;
+            box-shadow: none;
+        }
+        
+        button:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .results-section {
+            margin-top: 30px;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .dice-results {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .roll-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #eee;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .roll-item:last-child {
+            border-bottom: none;
+        }
+        
+        .roll-item:hover {
+            background-color: #f8fafc;
+        }
+        
+        .dice-value {
+            width: 50px;
+            height: 50px;
+            background-color: var(--light-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            margin-right: 16px;
+            font-weight: bold;
+            font-size: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            animation: rollDice 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+            transform-style: preserve-3d;
+        }
+        
+        @keyframes rollDice {
+            0% { transform: translateY(-100px) rotateX(0deg) rotateY(0deg); opacity: 0; }
+            50% { transform: translateY(0) rotateX(720deg) rotateY(360deg); }
+            75% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .success:after {
+            content: '✓';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: white;
+            color: var(--success-color);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            animation: popIn 0.3s ease-out 0.5s backwards;
+        }
+        
+        .fail {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .roll-info {
+            flex-grow: 1;
+        }
+        
+        .roll-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: space-between;
+            background-color: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            animation-fill-mode: both;
+        }
+        
+        .text-success {
+            color: var(--success-color);
+        }
+        
+        .text-danger {
+            color: var(--danger-color);
+        }
+        
+        .rolling-message {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: var(--secondary-color);
+            font-weight: bold;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .roll-controls {
+                flex-direction: column;
+            }
+            
+            .status-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Character Stats & Dice Rolling System</h1>
+        
+        <div class="stats-container" id="stats-container">
+            <!-- Stats will be generated by JavaScript -->
+        </div>
+        
+        <div class="status-section">
+            <div class="status-item stress">
+                <label>Stress (based on Focus)</label>
+                <div class="status-value" id="stress-value">0</div>
+            </div>
+            <div class="status-item stamina">
+                <label>Stamina (based on Resolve)</label>
+                <div class="status-value" id="stamina-value">0</div>
+                <div class="status-controls">
+                    <button class="status-control-btn" id="decrease-stamina">-</button>
+                    <button class="status-control-btn" id="increase-stamina">+</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="refresh-btn" id="refresh-stress-btn">Refresh Stress</button>
+            <button class="refresh-btn" id="refresh-stamina-btn">Refresh Stamina</button>
+        </div>
+        
+        <div class="roll-section">
+            <div class="roll-controls">
+                <div class="roll-control-group">
+                    <label for="stat-select">Skill to Test:</label>
+                    <select id="stat-select">
+                        <!-- Options will be added by JavaScript -->
+                    </select>
+                </div>
+                <div class="roll-control-group">
+                    <label for="dice-count">Number of Dice:</label>
+                    <div class="number-input-container">
+                        <input type="number" id="dice-count" min="1" value="3">
+                        <div class="number-input-controls">
+                            <button class="number-input-btn" id="increase-dice">+</button>
+                            <button class="number-input-btn" id="decrease-dice">-</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Removed dice type selector as it will use the skill's die type -->
+            </div>
+            
+            <button id="roll-dice-btn">Roll Dice</button>
+        </div>
+        
+        <div class="results-section" id="results-section" style="display: none;">
+            <div class="results-header">
+                <h2>Roll Results</h2>
+            </div>
+            
+            <div class="dice-results" id="dice-results">
+                <!-- Dice results will be added here by JavaScript -->
+            </div>
+            
+            <div class="roll-summary" id="roll-summary">
+                <!-- Summary will be added here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Define stats with descriptions
+            const stats = [
+                { name: "Strength", description: "Physical power for brute force", value: 6 },
+                { name: "Agility", description: "Reflexes and coordination", value: 6 },
+                { name: "Presence", description: "Charisma and influence", value: 6 },
+                { name: "Resolve", description: "Mental toughness and willpower", value: 6 },
+                { name: "Insight", description: "Perception and situational awareness", value: 6 },
+                { name: "Tech", description: "Expertise in technology and engineering", value: 6 },
+                { name: "Drive", description: "Skill with vehicles and machines", value: 6 },
+                { name: "Focus", description: "Concentration and execution under pressure", value: 6 },
+                { name: "Close Combat", description: "Hand-to-hand or melee skills", value: 6 },
+                { name: "Ranged Combat", description: "Proficiency with firearms and ranged weaponry", value: 6 },
+                { name: "Knowledge", description: "Understanding of lore and specialized fields", value: 6 },
+                { name: "Empathy", description: "Emotional intelligence and connection with others", value: 6 }
+            ];
+            
+            // Generate stat elements
+            const statsContainer = document.getElementById('stats-container');
+            const statSelect = document.getElementById('stat-select');
+            
+            stats.forEach(stat => {
+                // Create stat item for the grid
+                const statItem = document.createElement('div');
+                statItem.className = 'stat-item';
+                
+                statItem.innerHTML = `
+                    <div class="stat-name">${stat.name}</div>
+                    <div class="stat-description">${stat.description}</div>
+                    <div class="dice-selector">
+                        <span>Dice:</span>
+                        <select class="stat-dice" data-stat="${stat.name}">
+                            <option value="6">D6</option>
+                            <option value="8">D8</option>
+                            <option value="10">D10</option>
+                            <option value="12">D12</option>
+                        </select>
+                    </div>
+                `;
+                
+                statsContainer.appendChild(statItem);
+                
+                // Add stat to the dropdown for skill tests
+                const option = document.createElement('option');
+                option.value = stat.name;
+                option.textContent = stat.name;
+                statSelect.appendChild(option);
+            });
+            
+            // Add event listeners to all stat dice selectors
+            const statDiceSelectors = document.querySelectorAll('.stat-dice');
+            
+            statDiceSelectors.forEach(selector => {
+                selector.addEventListener('change', function() {
+                    const statName = this.getAttribute('data-stat');
+                    const statIndex = stats.findIndex(s => s.name === statName);
+                    
+                    if (statIndex !== -1) {
+                        stats[statIndex].value = parseInt(this.value);
+                        
+                        // Update stress and stamina if Focus or Resolve changes
+                        if (statName === "Focus") {
+                            updateStress();
+                        } else if (statName === "Resolve") {
+                            updateStamina();
+                        }
+                    }
+                });
+            });
+            
+            // Initialize stress and stamina
+            function updateStress() {
+                const focusStat = stats.find(s => s.name === "Focus");
+                if (focusStat) {
+                    const stressValue = focusStat.value;
+                    document.getElementById('stress-value').textContent = stressValue;
+                    
+                    // Update dice count max
+                    updateDiceCountMax(stressValue);
+                    
+                    // Enable roll button
+                    document.getElementById('roll-dice-btn').disabled = false;
+                    
+                    // Show success message
+                    Swal.fire({
+                        title: 'Stress Refreshed!',
+                        text: `Stress has been set to ${stressValue}`,
+                        icon: 'success',
+                        confirmButtonColor: '#3b82f6',
+                        timer: 1500,
+                        timerProgressBar: true,
+                        showConfirmButton: false
+                    });
+                }
+            }
+            
+            function updateStamina() {
+                const resolveStat = stats.find(s => s.name === "Resolve");
+                if (resolveStat) {
+                    const staminaValue = resolveStat.value;
+                    document.getElementById('stamina-value').textContent = staminaValue;
+                    
+                    // Show success message
+                    Swal.fire({
+                        title: 'Stamina Refreshed!',
+                        text: `Stamina has been set to ${staminaValue}`,
+                        icon: 'success',
+                        confirmButtonColor: '#10b981',
+                        timer: 1500,
+                        timerProgressBar: true,
+                        showConfirmButton: false
+                    });
+                }
+            }
+            
+            // Initial update
+            updateStress();
+            updateStamina();
+            
+            // Refresh buttons
+            document.getElementById('refresh-stress-btn').addEventListener('click', updateStress);
+            document.getElementById('refresh-stamina-btn').addEventListener('click', updateStamina);
+            
+            // Stamina manual controls
+            document.getElementById('increase-stamina').addEventListener('click', function() {
+                const currentStamina = parseInt(document.getElementById('stamina-value').textContent);
+                const resolveStat = stats.find(s => s.name === "Resolve");
+                const maxStamina = resolveStat ? resolveStat.value : 12;
+                
+                if (currentStamina < maxStamina) {
+                    document.getElementById('stamina-value').textContent = currentStamina + 1;
+                }
+            });
+            
+            document.getElementById('decrease-stamina').addEventListener('click', function() {
+                const currentStamina = parseInt(document.getElementById('stamina-value').textContent);
+                if (currentStamina > 0) {
+                    document.getElementById('stamina-value').textContent = currentStamina - 1;
+                }
+            });
+            
+            // Dice count controls
+            document.getElementById('increase-dice').addEventListener('click', function() {
+                const diceCountInput = document.getElementById('dice-count');
+                const currentValue = parseInt(diceCountInput.value);
+                const currentStress = parseInt(document.getElementById('stress-value').textContent);
+                const maxValue = Math.max(currentStress, 1);
+                
+                if (currentValue < maxValue) {
+                    diceCountInput.value = currentValue + 1;
+                }
+            });
+            
+            document.getElementById('decrease-dice').addEventListener('click', function() {
+                const diceCountInput = document.getElementById('dice-count');
+                const currentValue = parseInt(diceCountInput.value);
+                
+                if (currentValue > 1) {
+                    diceCountInput.value = currentValue - 1;
+                }
+            });
+            
+            // Function to reduce stress by dice count
+            function reduceStress(diceCount) {
+                const currentStress = parseInt(document.getElementById('stress-value').textContent);
+                const newStress = Math.max(0, currentStress - diceCount);
+                document.getElementById('stress-value').textContent = newStress;
+                
+                // Update dice count max value based on new stress
+                updateDiceCountMax(newStress);
+                
+                return newStress;
+            }
+            
+            // Function to update dice count max value
+            function updateDiceCountMax(stress) {
+                const diceCountInput = document.getElementById('dice-count');
+                const currentValue = parseInt(diceCountInput.value);
+                
+                // Set max attribute for the input
+                diceCountInput.max = Math.max(stress, 1);
+                
+                // If current value is greater than max, update it
+                if (currentValue > stress && stress > 0) {
+                    diceCountInput.value = stress;
+                }
+            }
+            
+            // Set initial max for dice count
+            updateDiceCountMax(parseInt(document.getElementById('stress-value').textContent));
+            
+            // Dice rolling
+            document.getElementById('roll-dice-btn').addEventListener('click', function() {
+                const selectedStat = document.getElementById('stat-select').value;
+                const diceCount = parseInt(document.getElementById('dice-count').value);
+                const currentStress = parseInt(document.getElementById('stress-value').textContent);
+                
+                // Check if stress is 0
+                if (currentStress <= 0) {
+                    Swal.fire({
+                        title: 'No Stress Left!',
+                        text: 'Cannot roll dice when stress is 0. Refresh your stress to continue.',
+                        icon: 'warning',
+                        confirmButtonColor: '#3b82f6'
+                    });
+                    return;
+                }
+                
+                // Find the stat for the selected skill
+                const stat = stats.find(s => s.name === selectedStat);
+                if (!stat) return;
+                
+                // Use the selected stat's die type
+                const diceType = stat.value;
+                
+                // The target number is the same as the die type for the skill
+                const targetNumber = diceType;
+                
+                // Reduce stress by the number of dice rolled
+                const remainingStress = reduceStress(diceCount);
+                
+                // Roll the dice animation and calculation
+                const resultsSection = document.getElementById('results-section');
+                const diceResults = document.getElementById('dice-results');
+                
+                // Show results section and clear previous results
+                resultsSection.style.display = 'block';
+                diceResults.innerHTML = '<div class="rolling-message">Rolling dice...</div>';
+                
+                // Simulate dice rolling with animation delay
+                setTimeout(() => {
+                    // Roll the dice
+                    const rolls = [];
+                    let successes = 0;
+                    
+                    for (let i = 0; i < diceCount; i++) {
+                        const roll = Math.floor(Math.random() * diceType) + 1;
+                        const isSuccess = roll >= targetNumber;
+                        
+                        if (isSuccess) {
+                            successes++;
+                        }
+                        
+                        rolls.push({
+                            value: roll,
+                            success: isSuccess
+                        });
+                    }
+                    
+                    // Update roll button state
+                    document.getElementById('roll-dice-btn').disabled = remainingStress <= 0;
+                    
+                    // Display results
+                    displayResults(rolls, successes, diceCount, targetNumber, selectedStat, diceType, remainingStress);
+                }, 800); // Delay to show animation
+            });
+            
+            function displayResults(rolls, successes, diceCount, targetNumber, selectedStat, diceType, remainingStress) {
+                const resultsSection = document.getElementById('results-section');
+                const diceResults = document.getElementById('dice-results');
+                const rollSummary = document.getElementById('roll-summary');
+                
+                // Show results section
+                resultsSection.style.display = 'block';
+                
+                // Clear previous results
+                diceResults.innerHTML = '';
+                
+                // Add each roll result with staggered animation delay
+                rolls.forEach((roll, index) => {
+                    const rollItem = document.createElement('div');
+                    rollItem.className = 'roll-item';
+                    rollItem.style.animationDelay = `${index * 0.1}s`;
+                    
+                    const resultClass = roll.success ? 'success' : 'fail';
+                    
+                    rollItem.innerHTML = `
+                        <div class="dice-value ${resultClass}" style="animation-delay: ${index * 0.1}s">${roll.value}</div>
+                        <div class="roll-info">
+                            <div>Die ${index + 1}: Rolled ${roll.value}</div>
+                            <div>Target: ${targetNumber}+ on d${diceType}</div>
+                            <div class="${resultClass === 'success' ? 'text-success' : 'text-danger'}" style="font-weight: bold">
+                                ${roll.success ? 'SUCCESS' : 'FAIL'}
+                            </div>
+                        </div>
+                    `;
+                    
+                    diceResults.appendChild(rollItem);
+                });
+                
+                // After a short delay, show summary with animation
+                setTimeout(() => {
+                    // Update summary
+                    rollSummary.innerHTML = `
+                        <div>Total Dice: ${diceCount}</div>
+                        <div>Die Type: d${diceType} (${selectedStat})</div>
+                        <div>Target: ${targetNumber}+</div>
+                        <div style="color: ${successes > 0 ? 'var(--success-color)' : 'var(--danger-color)'}; font-size: 1.2em;">
+                            Successes: ${successes}
+                        </div>
+                        <div>Remaining Stress: ${remainingStress}</div>
+                    `;
+                    
+                    rollSummary.style.animation = 'fadeIn 0.5s ease-in-out';
+                    
+                    // Show success/failure message based on results
+                    let message, icon;
+                    if (successes > 0) {
+                        message = `${successes} success${successes > 1 ? 'es' : ''}!`;
+                        icon = 'success';
+                    } else {
+                        message = 'No successes...';
+                        icon = 'error';
+                    }
+                    
+                    Swal.fire({
+                        title: successes > 0 ? 'Success!' : 'Failure!',
+                        text: message,
+                        icon: icon,
+                        confirmButtonColor: '#3b82f6',
+                        timer: 1500,
+                        timerProgressBar: true,
+                        showConfirmButton: false
+                    });
+                }, diceCount * 100 + 300); // Delay based on number of dice
+            }
+        });
+    </script>
+</body>
+</html>
