@@ -1136,6 +1136,8 @@ input[type="number"] {
                     }
                 });
             });
+
+            let isInitialLoad = true;
             
             // Initialize stress and stamina
             function updateStress() {
@@ -1150,16 +1152,18 @@ input[type="number"] {
                     // Enable roll button
                     document.getElementById('roll-dice-btn').disabled = false;
                     
-                    // Show success message
-                    Swal.fire({
-                        title: 'Stress Refreshed!',
-                        text: `Stress has been set to ${stressValue}`,
-                        icon: 'success',
-                        confirmButtonColor: '#3b82f6',
-                        timer: 1500,
-                        timerProgressBar: true,
-                        showConfirmButton: false
-                    });
+                    // Only show success message if not initial load
+                    if (!isInitialLoad) {
+                        Swal.fire({
+                            title: 'Stress Refreshed!',
+                            text: `Stress has been set to ${stressValue}`,
+                            icon: 'success',
+                            confirmButtonColor: '#3b82f6',
+                            timer: 1500,
+                            timerProgressBar: true,
+                            showConfirmButton: false
+                        });
+                    }
                 }
             }
             
@@ -1169,22 +1173,26 @@ input[type="number"] {
                     const staminaValue = resolveStat.value;
                     document.getElementById('stamina-value').textContent = staminaValue;
                     
-                    // Show success message
-                    Swal.fire({
-                        title: 'Stamina Refreshed!',
-                        text: `Stamina has been set to ${staminaValue}`,
-                        icon: 'success',
-                        confirmButtonColor: '#10b981',
-                        timer: 1500,
-                        timerProgressBar: true,
-                        showConfirmButton: false
-                    });
+                    // Only show success message if not initial load
+                    if (!isInitialLoad) {
+                        Swal.fire({
+                            title: 'Stamina Refreshed!',
+                            text: `Stamina has been set to ${staminaValue}`,
+                            icon: 'success',
+                            confirmButtonColor: '#10b981',
+                            timer: 1500,
+                            timerProgressBar: true,
+                            showConfirmButton: false
+                        });
+                    }
                 }
             }
             
-            // Initial update
+            // After the initial updateStress() and updateStamina() calls, set isInitialLoad to false
+            // Add this right after the initial calls to these functions
             updateStress();
             updateStamina();
+            isInitialLoad = false;
             
             // Refresh buttons
             document.getElementById('refresh-stress-btn').addEventListener('click', updateStress);
@@ -1283,7 +1291,7 @@ input[type="number"] {
                 const diceType = stat.value;
                 
                 // The target number is the same as the die type for the skill
-                const targetNumber = diceType;
+                const targetNumber = 6; // Always 6+
                 
                 // Reduce stress by the number of dice rolled
                 const remainingStress = reduceStress(diceCount);
